@@ -35,6 +35,11 @@ inline void clearAll()
 
 void calFoodCount(vector<int>& eatChecker, int& minFoodCnt, const int currFoodCnt)
 {
+    if (currFoodCnt >= minFoodCnt)
+    {
+        return;
+    }
+
     // 모두 다 찾은경우. 최종 선택된 음식의 수를 갱신한다
     if (all_of(begin(eatChecker), end(eatChecker), [](int v) { return (0 < v); }))
     {
@@ -50,6 +55,7 @@ void calFoodCount(vector<int>& eatChecker, int& minFoodCnt, const int currFoodCn
     }
 
     // 못먹은 사람이 먹을 수 있는 음식을 만들어 반복한다
+    // 해당음식을 좋아하는 사람도 추가 해야함
     int idx = distance(eatChecker.begin(), hungryIter);
     for (const auto& selectedFood : like[idx])
     {
@@ -58,7 +64,6 @@ void calFoodCount(vector<int>& eatChecker, int& minFoodCnt, const int currFoodCn
             ++eatChecker[people];
         }
 
-        //해당음식을 좋아하는 사람도 추가 해야함
         calFoodCount(eatChecker, minFoodCnt, currFoodCnt + 1);
 
         for (const auto& people : food[selectedFood])
@@ -116,4 +121,4 @@ int main(void)
     copy(begin(res), end(res), ostream_iterator<int>{cout, "\n"});
     
     return 0;
-}   
+}
