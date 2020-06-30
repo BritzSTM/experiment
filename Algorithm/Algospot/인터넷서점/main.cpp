@@ -89,7 +89,7 @@ int main(void)
         caseRes.push_back(getMinimalPrice(storeRecode));
     }
 
-    copy(cbegin(caseRes), cend(caseRes), ostream_iterator<int>{ cout, "\n" });
+    copy(begin(caseRes), end(caseRes), ostream_iterator<int>{ cout, "\n" });
 
     return 0;
 }
