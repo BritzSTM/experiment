@@ -1,72 +1,66 @@
 /*
     https://www.algospot.com/judge/problem/read/BOOKSTORE#
 
-    저장방식 바꿔야함
-    게산방식 바꿔야함
+    1. 책을 구매해야지 포인트가 쌓이고 그 다음 책을 구매할 때 포인트를 쓸 수 있다
 */
 #include <iostream>
 #include <limits>
 #include <array>
 #include <vector>
 #include <utility>
+#include <algorithm>
+#include <iterator>
 
 
 using namespace std;
 
 
-enum ERecode
-{
-    ETotalVal,
-    EMinVal
-};
-
 using BookPrice = pair<int, int>; //first = price, second = point
-using BookRecode = array<BookPrice, 2>; //ERecodeType을 이용해 접근할 것
+using BookRecode = vector<BookPrice>; //ERecodeType을 이용해 접근할 것
 using StoreRecode = vector<BookRecode>;
 
-
-void InitStoreRecode(StoreRecode& recode, int storeCount)
+// 가격에 포인트를 적용한 금액이 나온다
+inline void usePoint(int& price, int& point)
 {
-    //! 이미 레코드들이 생성되어 있어야함
+    price -= point;
 
-    for (auto& bookRecode : recode)
+    if (price < 0)
     {
-        bookRecode[ERecode::ETotalVal].first = bookRecode[ERecode::ETotalVal].second = 0;
-
-        //최소 포인트를 가진 것을 획득해야 함. 따라서 포인트는 최대 값으로 설정
-        bookRecode[ERecode::EMinVal].first = 0;
-        bookRecode[ERecode::EMinVal].second = numeric_limits<int>::max();
+        point = price * -1;
+        price = 0;
     }
-}
-
-void renewBookRecode(BookRecode& recode, const BookPrice& price)
-{
-    //무조건 최종 금액에 우선 합산한다. 
-    recode[ERecode::ETotalVal].first += price.first;
-    recode[ERecode::ETotalVal].second += price.second;
-
-    //만약 현재 가게의 지정된 최소 값보다 작다면 갱신
-    if (recode[ERecode::EMinVal].second > price.second)
+    else
     {
-        recode[ERecode::EMinVal].first = price.first;
-        recode[ERecode::EMinVal].second = price.second;
+        point = 0;
     }
 }
 
 int getMinimalPrice(StoreRecode& stores)
 {
-    // 최종금액 = 최종 현금 액수 + 최종 포인트 + 최소 포인트(마지막 구매이므로 결제시 사용불가
-    // 최종금액이 적은 가게를 선정 및 출력
-    int total{ numeric_limits<int>::max() };
-
     for (auto& store : stores)
     {
-        int finalVal{ store[ERecode::ETotalVal].first - store[ERecode::ETotalVal].second + store[ERecode::EMinVal].second };
-        
-        total = min(total, finalVal);
+        sort(begin(store), end(store),
+            [](const BookPrice& lhs, const BookPrice& rhs) { return lhs.second > rhs.second; });
     }
 
-    return total;
+    int minPrice{ numeric_limits<int>::max() };
+    for (auto& store : stores)
+    {
+        int total{ 0 }, point{ 0 };
+
+        for (const auto& bookPrice : store)
+        {
+            int price{ bookPrice.first };
+            usePoint(price, point);
+
+            total += price;
+            point += bookPrice.second;
+        }
+
+        minPrice = min(minPrice, total);
+    }
+
+    return minPrice;
 }
 
 int main(void)
@@ -76,27 +70,26 @@ int main(void)
     int c{ 0 };
     cin >> c;
 
+    vector<int> caseRes;
     while (c--)
     {
-        int books{ 0 }, store{ 0 };
-        cin >> books >> store;
+        int books{ 0 }, stores{ 0 };
+        cin >> books >> stores;
 
-        StoreRecode storeRecode(store);
-        InitStoreRecode(storeRecode, store);
+        StoreRecode storeRecode(stores, BookRecode( books ));
 
         for (int i{ 0 }; i < books; ++i)
         {
-            for (int j{ 0 }; j < store; ++j)
-            {
-                BookPrice price{};
-                cin >> price.first >> price.second;
-
-                renewBookRecode(storeRecode[j], price);
+            for (int j{ 0 }; j < stores; ++j)
+            {   
+                cin >> storeRecode[j][i].first >> storeRecode[j][i].second;
             }
         }
 
-        cout << getMinimalPrice(storeRecode) << endl;
+        caseRes.push_back(getMinimalPrice(storeRecode));
     }
+
+    copy(cbegin(caseRes), cend(caseRes), ostream_iterator<int>{ cout, "\n" });
 
     return 0;
 }
