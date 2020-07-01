@@ -1,4 +1,11 @@
+/*
+    https://www.acmicpc.net/problem/1236
+
+    시행착오
+    1. 너무 어렵게 풀려고 했음. 문제를 다시 한번 보고 고민해 보자
+*/
 #include <iostream>
+#include <vector>
 #include <algorithm>
 
 using namespace std;
@@ -8,72 +15,6 @@ int g_castle[kMax][kMax]{};
 int g_h;
 int g_w;
 
-bool isOutOfRange(int y, int x)
-{
-    return (y < 0 || y >= g_h || x < 0 || x >= g_w);
-}
-
-void fill(int y, int x, int type)
-{
-    //해당 지점이 정해지면 해당 행렬에 전부 type을 더 함
-    g_castle[y][x] += type;
-
-    for (int i{ x + 1 }; !isOutOfRange(y, i); ++i)
-    {
-        g_castle[y][i] += type;
-    }
-
-    for (int i{ x - 1 }; !isOutOfRange(y, i); --i)
-    {
-        g_castle[y][i] += type;
-    }
-
-    for (int j{ y - 1 }; !isOutOfRange(j, x); --j)
-    {
-        g_castle[j][x] += type;
-    }
-
-    for (int j{ y + 1 }; !isOutOfRange(j, x); ++j)
-    {
-        g_castle[j][x] += type;
-    }
-}
-
-int findMinimal()
-{
-    // 행과 열중에 가장 비어있는 곳이 답이다.
-    int wG{ 0 };
-
-    //열중에 가장 크게 비어 있는곳을 찾는다.
-    for (int j{ 0 }; j < g_w; ++j)
-    {
-        int tmp{ 0 };
-        for (int i{ 0 }; i < g_h; ++i)
-        {
-            if (g_castle[i][j] == 0)
-            {
-                ++tmp;
-            }
-        }
-        wG = max(tmp, wG);
-    }
-
-    int hG{ 0 };
-    for (int i{ 0 }; i < g_h; ++i)
-    {
-        int tmp{ 0 };
-        for (int j{ 0 }; j < g_w; ++j)
-        {
-            if (g_castle[i][j] == 0)
-            {
-                ++tmp;
-            }
-        }
-        hG = max(tmp, hG);
-    }
-
-    return max(hG, wG);
-}
 
 int main(void)
 {
@@ -81,6 +22,9 @@ int main(void)
     cin.tie(0); cout.tie(0);
 
     cin >> g_h >> g_w;
+
+    vector<bool> hGuard(g_h);
+    vector<bool> wGuard(g_w);
 
     for (int i{ 0 }; i < g_h; ++i)
     {
@@ -91,12 +35,16 @@ int main(void)
 
             if (c == 'X')
             {
-                fill(i, j, 1);
+                hGuard[i] = true;
+                wGuard[j] = true;
             }
         }   
     }
 
-    cout << findMinimal() << endl;
+    int hGuardCnt = count(begin(hGuard), end(hGuard), false);
+    int wGuardCnt = count(begin(wGuard), end(wGuard), false);
+
+    cout << max(hGuardCnt, wGuardCnt);
 
     return 0;
 }
