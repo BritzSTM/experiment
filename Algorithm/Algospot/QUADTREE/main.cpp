@@ -1,5 +1,9 @@
 /*
     https://www.algospot.com/judge/submission/recent/
+
+    시행착오
+    1. 분해하기 어렵다고 생각할 때는 모든 재귀함수에 영향을 줄 수 있는
+       하나의 Cursor를 고려해 볼 것
 */
 #include <iostream>
 #include <string>
