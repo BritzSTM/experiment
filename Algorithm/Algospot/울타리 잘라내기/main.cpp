@@ -1,11 +1,14 @@
+/*
+   https://www.algospot.com/judge/problem/read/FENCE
+*/
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <iterator>
 
 
 using namespace std;
-
 
 // [lo, hi] 구간을 나타낸다
 int getMaxPanel(const vector<int>& fence, const int lo, const int hi)
@@ -16,57 +19,76 @@ int getMaxPanel(const vector<int>& fence, const int lo, const int hi)
         return fence[lo];
     }
 
+    //좌우 분할해서 큰값을 획득
     int mid{ (lo + hi) / 2 };
-    int maxVal = max(getMaxPanel(fence, lo, mid), getMaxPanel(fence, mid + 1, hi));
+    int maxLhVal = max(getMaxPanel(fence, lo, mid), getMaxPanel(fence, mid + 1, hi));
 
     // 양측에 걸쳐있을 경우를 계산할 것
     int loCursor{ mid };
     int hiCursor{ mid };
-    int minHeight{ numeric_limits<int>::max() };
+    int minHeight{ fence[mid] };
+    int maxMVal{ fence[mid] };
     
+    //항상 커서가 있는 곳은 이미 포함되어서 계산되었다는 조건이 있음
     while (loCursor > lo || hiCursor < hi)
     {
-        //좌우 다음 번것이 큰것을 선택한다
+  
         int nextloCursorPanel{ -1 };
-        int nextloCursor = loCursor - 1;
-
-        if (nextloCursor > -1 && nextloCursor >= lo)
+        if (loCursor > lo)
         {
-            nextloCursorPanel = fence[nextloCursor];
+            nextloCursorPanel = fence[loCursor - 1];
         }
 
         int nextHiCursorPanel{ -1 };
-        int nextHiCursor = hiCursor - 1;
-
-        if (nextHiCursor < fence.size() && nextHiCursor <= hi)
+        if (hiCursor < hi)
         {
-            nextHiCursorPanel = fence[nextHiCursor];
+            nextHiCursorPanel = fence[hiCursor + 1];
         }
 
-        if (nextloCursorPanel == -1 && nextHiCursorPanel == -1)
-        {
-            break;
-        }
-       
         if (nextloCursorPanel < nextHiCursorPanel)
         {
-            hiCursor = nextHiCursor;
+            ++hiCursor;
             minHeight = min(minHeight, fence[hiCursor]);
         }
         else
         {
-            loCursor = nextloCursor;
+            --loCursor;
             minHeight = min(minHeight, fence[loCursor]);
         }
+
+        //좌우로 확장시 최대 값을 획득해야 한다
+        int midFinalSize{ (hiCursor - loCursor + 1) * minHeight };
+        maxMVal = max(maxMVal, midFinalSize);
     }
 
-    int midFinalSize{ (hiCursor - loCursor) * minHeight };
-    return max(maxVal, midFinalSize);
+    
+    return max(maxLhVal, maxMVal);
 }
 
 int main(void)
 {
-    vector<int> testCase{ 7, 1, 5, 9, 6, 7, 3 };
+    ios::sync_with_stdio(false);
+    cin.tie(0); cout.tie(0);
 
-    cout << getMaxPanel(testCase, 0, testCase.size() - 1);
+    int testCase{ 0 };
+    cin >> testCase;
+
+    vector<int> res;
+    while (testCase--)
+    {
+        int n{ 0 };
+        cin >> n;
+
+        vector<int> fence(n);
+        for (auto& v : fence)
+        {
+            cin >> v;
+        }
+
+        res.push_back(getMaxPanel(fence, 0, fence.size() - 1));
+    }
+
+    copy(begin(res), end(res), ostream_iterator<int>{cout, "\n"});
+
+    return 0;
 }
