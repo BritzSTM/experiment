@@ -1,3 +1,8 @@
+/*
+   https://algospot.com/judge/submission/recent/
+
+   dp방식으로 푸는 문제인데 그렇게 안해도 풀렸음
+*/
 #include <iostream>
 #include <string>
 #include <vector>
@@ -58,9 +63,8 @@ int main(void)
     int testCase{ 0 };
     cin >> testCase;
 
-    vector<string> res;
-    res.reserve(testCase);
 
+    vector<string> res;
     while (testCase--)
     {
         string p;
@@ -75,17 +79,22 @@ int main(void)
             cin >> files[i];
         }
 
+        vector<string> caseRes;
         for (auto& f : files)
         {
             if (isMatch(p, f))
             {
-                res.push_back(f);
+                caseRes.push_back(f);
             }
+        }
+
+        sort(begin(caseRes), end(caseRes));
+        for (auto& v : caseRes)
+        {
+            res.push_back(v);
         }
     }
 
-    sort(begin(res), end(res));
     copy(begin(res), end(res), ostream_iterator<string>{cout, "\n"});
-
     return 0;
 }
