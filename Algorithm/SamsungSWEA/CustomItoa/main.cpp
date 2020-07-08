@@ -1,3 +1,6 @@
+/*
+    최대한 가독성을 높이기 위해 조건 인라인 함수를 작성해 적용해 봄
+*/
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -27,7 +30,7 @@ inline int toInt(const char c) noexcept
 
 /*
     부호를 포함할 수도 있는 문자열을 전달 받음
-    최대한 가능한 변환 가능한 문자열을 변환
+    최대한 변환 가능한 문자열을 변환
 */
 int customItoa(const string s, int* const pOutPos = nullptr)
 {
