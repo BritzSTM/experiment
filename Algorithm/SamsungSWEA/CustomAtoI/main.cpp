@@ -32,7 +32,7 @@ inline int toInt(const char c) noexcept
     부호를 포함할 수도 있는 문자열을 전달 받음
     최대한 변환 가능한 문자열을 변환
 */
-int customItoa(const string s, int* const pOutPos = nullptr)
+int customAtoI(const string s, int* const pOutPos = nullptr)
 {
     if (pOutPos != nullptr)
     {
@@ -88,12 +88,12 @@ int main(void)
 {
     int pos{0};
 
-    assert(customItoa("", &pos) == 0 && pos == -1);
-    assert(customItoa("+", &pos) == 0 && pos == 0);
-    assert(customItoa("+123", &pos) == 123 && pos ==  3);
-    assert(customItoa("-123", &pos) == -123 && pos == 3);
-    assert(customItoa("123a5", &pos) == 123 && pos == 2);
-    assert(customItoa("+1234a4", &pos) == 1234 && pos == 4);
+    assert(customAtoI("", &pos) == 0 && pos == -1);
+    assert(customAtoI("+", &pos) == 0 && pos == 0);
+    assert(customAtoI("+123", &pos) == 123 && pos ==  3);
+    assert(customAtoI("-123", &pos) == -123 && pos == 3);
+    assert(customAtoI("123a5", &pos) == 123 && pos == 2);
+    assert(customAtoI("+1234a4", &pos) == 1234 && pos == 4);
 
     return 0;
 }
