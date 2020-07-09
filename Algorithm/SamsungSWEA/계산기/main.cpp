@@ -8,6 +8,7 @@
 #include <sstream>
 #include <optional>
 #include <stack>
+#include <cassert>
 
 using namespace std;
 
@@ -48,6 +49,32 @@ namespace _internal
         }
 
         return {};
+    }
+
+    template<typename _Ty>
+    inline void operate(_Ty& lhs, const _Ty& rhs, const char& opCode) noexcept
+    {
+        switch (opCode)
+        {
+        case '+':
+            lhs += rhs;
+            break;
+
+        case '-':
+            lhs -= rhs;
+            break;
+
+        case '*':
+            lhs *= rhs;
+            break;
+
+        case '/':
+            lhs /= rhs;
+            break;
+
+        default:
+            break;
+        }
     }
 }
 
@@ -124,16 +151,49 @@ SExpression<Prefix> toPrefixExp(const SExpression<Infix> exp)
 
 // 후위 수식을 계산한 후 반환
 template<typename _Res>
-_Res CalPrefixExp(const SExpression<Prefix> exp);
+_Res CalPrefixExp(const SExpression<Prefix> exp)
+{
+    using _internal::getOperatorRank;
+    using _internal::operate;
+
+    if (exp.valid)
+    {
+        stack<_Res> operands;
+        for (const auto& elem : exp.data)
+        {
+            if (getOperatorRank(elem))
+            {
+                auto operand1{ operands.top() };
+                operands.pop();
+
+                auto operand2{ operands.top() };
+                operands.pop();
+
+                operate(operand1, operand2, elem);
+                operands.push(operand1);
+            }
+            else
+            {
+                operands.push(elem - '0');
+            }
+        }
+
+        return operands.top();
+    }
+
+    return 0;
+}
 
 int main(void)
 {
-    SExpression<Infix> exp1{ "(1+2)+3*2" };
-    SExpression<Infix> exp2{ "(2+5)*3*(2+1)" }; //25+3*21+*
+    SExpression<Infix> exp1{ "(1+2)+3*2" };     // 12+32*, 9
+    SExpression<Infix> exp2{ "(2+5)*3*(2+1)" }; // 25+3*21+*, 63
 
-    auto prefixExp{ toPrefixExp(exp2) };
+    auto prefixExp1{ toPrefixExp(exp1) };
+    auto prefixExp2{ toPrefixExp(exp2) };
 
-    //cout << CalPrefixExp<int>(prefixExp);
+    assert(CalPrefixExp<int>(prefixExp1) == 9);
+    assert(CalPrefixExp<int>(prefixExp2) == 63);
 
     return 0;
 }
