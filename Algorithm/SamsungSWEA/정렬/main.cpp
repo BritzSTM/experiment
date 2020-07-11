@@ -37,22 +37,49 @@ void bubbleSort(const _Iter first, const  _Iter last)
             }
         }
     }
+
+    return;
 }
 
 // 선택
+template<typename _Iter>
+void selectionSort(const _Iter first, const  _Iter last)
+{
+    const auto diff{ last - first };
+
+    for (auto i{ 0 }; i < diff; ++i)
+    {
+        auto minIter{ first + i };
+        for (auto iter{ minIter + 1}; iter != last; ++iter)
+        {
+            if (*iter < *minIter)
+            {
+                minIter = iter;
+            }
+        }
+
+        swap(*(first + i), *minIter);
+    }
+
+    return;
+}
+
 // 삽입
 
 int main(void)
 {
-    vector<int> src{ getRandomSrc(-10000, 10000, 10000) };
+    vector<int> src{ getRandomSrc(-10000, 10000, 1000) };
 
     vector<int> correct{ src };
     sort(begin(correct), end(correct));
 
     vector<int> bubble{ src };
     bubbleSort(begin(bubble), end(bubble));
-
     assert(bubble == correct);
+
+    vector<int> selection{ src };
+    selectionSort(begin(selection), end(selection));
+    assert(selection == correct);
 
     return 0;
 }
