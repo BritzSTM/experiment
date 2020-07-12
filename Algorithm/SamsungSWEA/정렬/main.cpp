@@ -65,6 +65,21 @@ void selectionSort(const _Iter first, const  _Iter last)
 }
 
 // 삽입
+template<typename _Iter>
+void insertionSort(const _Iter first, const  _Iter last)
+{
+    /*
+       삽입정렬의 특징은 정렬된 집합을 점차 늘려가는 것
+       그렇기 때문에 회전으로 표현이 가능함
+       c++ ref code
+    */
+    for (auto it = first; it != last; ++it)
+    {
+        std::rotate(std::upper_bound(first, it, *it), it, std::next(it));
+    }
+
+    return;
+}
 
 int main(void)
 {
@@ -80,6 +95,10 @@ int main(void)
     vector<int> selection{ src };
     selectionSort(begin(selection), end(selection));
     assert(selection == correct);
+
+    vector<int> insertion{ src };
+    insertionSort(begin(insertion), end(insertion));
+    assert(insertion == correct);
 
     return 0;
 }
