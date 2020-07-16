@@ -124,6 +124,32 @@ void bfs(const GraphSet& nodeSet, const int v)
     _internal::bfs(nodeSet, checker, sq);
 }
 
+void bfsIter(const GraphSet& nodeSet, const int v)
+{
+    Visiting checker(nodeSet.size(), false);
+    queue<const SGraphNode*> sq;
+    sq.push(&nodeSet[v]);
+    checker[v] = true;
+
+    while (!sq.empty())
+    {
+        const auto node{ sq.front()};
+        cout << node->id << endl;
+        sq.pop();
+        
+        for (const auto& adjNode : node->adjNodes)
+        {
+            const auto adjID{ adjNode.node->id };
+
+            if (!checker[adjID])
+            {
+                checker[adjID] = true;
+                sq.push(&nodeSet[adjID]);
+            }
+        }
+    }
+}
+
 void dfs(const GraphSet& nodeSet, const int v)
 {
     Visiting checker(nodeSet.size(), false);
@@ -140,6 +166,9 @@ int main(void)
 
     cout << "bfs" << endl;
     bfs(nodeSet, 1);
+
+    cout << "bfsIter" << endl;
+    bfsIter(nodeSet, 1);
 
     return 0;
 }
