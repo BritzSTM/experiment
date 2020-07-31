@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <vector>
 
 using namespace std;
 
@@ -27,17 +28,42 @@ public:
     }
 };
 
-class CModel1 { };
-class CModel2 { };
+struct IModel
+{
+    virtual void accept(IVisitor* pVisitor) = 0;
+};
+
+class CModel1
+    : public IModel
+{
+public:
+    virtual void accept(IVisitor* pVisitor) override
+    {
+        pVisitor->visit(*this);
+    }
+};
+
+class CModel2 
+    : public IModel
+{
+public:
+    virtual void accept(IVisitor* pVisitor) override
+    {
+        pVisitor->visit(*this);
+    }
+};
 
 int main(void)
 {
-    auto pVisitor = make_unique<CVisitor>();
-    CModel1 m1;
-    CModel2 m2;
+    vector<unique_ptr<IModel>> models;
+    models.emplace_back(new CModel1());
+    models.emplace_back(new CModel2());
 
-    pVisitor->visit(m1);
-    pVisitor->visit(m2);
+    auto pVisitor = make_unique<CVisitor>();
+    for (auto& model : models)
+    {
+        model->accept(pVisitor.get());
+    }
 
     return 0;
 }
