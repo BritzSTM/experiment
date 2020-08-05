@@ -1,11 +1,10 @@
 #include <iostream>
 #include <memory>
+#include <tuple>
+#include <variant>
 
 using namespace std;
 
-/*
-    고전 상태패턴
-*/
 namespace _internal
 {
     enum EConnState
@@ -15,6 +14,7 @@ namespace _internal
         Disconnect
     };
 
+    // 고전 상태패턴
     inline namespace v1
     {
         struct SEndPointDesc final
@@ -143,9 +143,101 @@ namespace _internal
             unique_ptr<IEndPointState> m_pStates[3];
         };
     }
+
+    // variant를 이용한 다른 방식의 상태패턴. cpp_ver >= 17
+    namespace diff
+    {
+        template<typename... _States>
+        class TStateMachine
+        {
+        public:
+            TStateMachine()
+                : m_states{}
+                , m_pCurrState{&get<0>(m_states)}
+            {
+
+            }
+
+            template<typename _State>
+            void transTo()
+            {
+                m_pCurrState = &get<_State>(m_states);
+            }
+
+            template<typename _Event>
+            void handle(const _Event& event)
+            {
+                auto passEventToState = [this, &event](auto ptr)
+                {
+                    ptr->handle(event).execute(*this);
+                };
+
+                visit(passEventToState, m_pCurrState);
+            }
+
+        private:
+            tuple<_States...> m_states;
+            variant<_States*...> m_pCurrState;
+        };
+
+        template<typename _State>
+        struct TransTo
+        {
+            template<typename _Machine>
+            void execute(_Machine& m)
+            {
+                m.template transTo<_State>();
+            }
+        };
+
+        struct Nothing
+        {
+            template<typename _Machine>
+            void execute(_Machine&) {}
+        };
+
+        struct OpenEvent {};
+        struct CloseEvent {};
+
+        struct ClosedState;
+        struct OpenState;
+
+        struct ClosedState
+        {
+            TransTo<OpenState> handle(const OpenEvent&) const
+            {
+                cout << "opening..." << endl;
+                return {};
+            }
+
+            Nothing handle(const CloseEvent&) const
+            {
+                cout << "already closed" << endl;
+                return {};
+            }
+        };
+
+        struct OpenState
+        {
+            TransTo<ClosedState> handle(const CloseEvent&) const
+            {
+                cout << "closing..." << endl;
+                return {};
+            }
+
+            Nothing handle(const OpenEvent&) const
+            {
+                cout << "already open" << endl;
+                return {};
+            }
+        };
+
+        using CDoor = TStateMachine<ClosedState, OpenState>;
+    }
 }
 
 using _internal::CEndPoint;
+using namespace _internal::diff;
 
 int main(void)
 {
@@ -162,6 +254,14 @@ int main(void)
 
     endPoint.Send();
     endPoint.Disconnect();
+
+    cout << "\nanother\n" << endl;
+
+    CDoor door;
+    door.handle(OpenEvent{});
+    door.handle(OpenEvent{});
+    door.handle(CloseEvent{});
+    door.handle(CloseEvent{});
 
     return 0;
 }
