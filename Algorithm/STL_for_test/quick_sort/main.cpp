@@ -3,6 +3,7 @@
 #include <vector>
 #include <random>
 
+
 using namespace std;
 
 vector<int> CreateNumbers(const size_t n)
@@ -26,16 +27,26 @@ inline void print(vector<int>& vec)
 	cout << endl;
 }
 
+// [first, last)
 template<typename _Container, typename _Iter, typename _Pred>
 _Iter partition(_Container& data, _Iter first, _Iter last, _Iter pivot, _Pred pred)
 {
-	// [f, l]
+	// range setup to [first, last]
+	if (first == pivot)
+		advance(first, 1);
+	else
+	{
+		iter_swap(first, pivot);
+		first = next(pivot);
+	}
+	--last;
+
 	while (true)
 	{
-		while (*first <= *pivot && distance(first, last) > 0)
+		while (pred(*first, *pivot) && distance(first, last) > 0) 
 			++first;
 
-		while (*last > *pivot && distance(first, last) > 0)
+		while (pred(*pivot, *last) && distance(first, last) > 0)
 			--last;
 
 		if (first == last)
@@ -44,32 +55,30 @@ _Iter partition(_Container& data, _Iter first, _Iter last, _Iter pivot, _Pred pr
 			iter_swap(first, last);
 	}
 
-	if (*pivot > *last)
-		iter_swap(pivot, last);
+	if (pred(*last, *pivot))
+		iter_swap(last, pivot);
 
-	return pivot;
+	return last;
 }
 
+// [first, last)
 template<typename _Container, typename _Iter, typename _Pred>
 void quick_sort(_Container& data, _Iter first, _Iter last, _Pred pred)
 {
-	const auto dist{ distance(first, last) };
-
-	if (dist <= 1)
+	if (distance(first, last) <= 1) 
 		return;
 
-	auto pivotIt{ partition(data, first + 1, last, first, pred) };
+	auto pivotIt{ partition(data, first, last, first, pred) };
 
-	quick_sort(data, first, pivotIt - 1, pred);
+	quick_sort(data, first, pivotIt, pred);
 	quick_sort(data, pivotIt, last, pred);
 
 	return;
 }
 
-
 int main(void)
 {
-	vector<int> vec{CreateNumbers(6)};
+	vector<int> vec{CreateNumbers(9)};
 	print(vec);
 
 	quick_sort(vec, vec.begin(), vec.end(), less<int>());
