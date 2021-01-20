@@ -41,7 +41,7 @@ _Iter partition(_Container& data, _Iter first, _Iter last, _Iter pivot, _Pred pr
 	}
 	--last;
 
-	while (true)
+	while (first != last)
 	{
 		while (pred(*first, *pivot) && distance(first, last) > 0) 
 			++first;
@@ -49,10 +49,7 @@ _Iter partition(_Container& data, _Iter first, _Iter last, _Iter pivot, _Pred pr
 		while (pred(*pivot, *last) && distance(first, last) > 0)
 			--last;
 
-		if (first == last)
-			break;
-		else
-			iter_swap(first, last);
+		iter_swap(first, last);
 	}
 
 	if (pred(*last, *pivot))
@@ -78,7 +75,7 @@ void quick_sort(_Container& data, _Iter first, _Iter last, _Pred pred)
 
 int main(void)
 {
-	vector<int> vec{CreateNumbers(9)};
+	vector<int> vec{CreateNumbers(12)};
 	print(vec);
 
 	quick_sort(vec, vec.begin(), vec.end(), less<int>());
