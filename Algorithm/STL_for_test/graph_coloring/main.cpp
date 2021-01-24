@@ -2,19 +2,22 @@
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 
 using namespace std;
 
-enum class EColor : int
+enum EColor : int
 {
 	Unknown,
-	Red,
+	_First = 1,
+	Red = 1,
 	Blue,
 	Green,
 	Yellow,
 	Black,
-	White
+	White,
+	_Last
 };
 
 using VertexID = int;
@@ -56,7 +59,7 @@ class CGraph
 {
 public:
 	using edge_list_type = vector<SEdge>;
-	using vertex_map_type = unordered_map<SVertex*, edge_list_type, VertexHasher, VertexEqualTo>;
+	using vertex_map_type = unordered_map<const SVertex*, edge_list_type, VertexHasher, VertexEqualTo>;
 
 private:
 	friend ostream& operator<<(ostream& os, const CGraph& g);
@@ -91,6 +94,26 @@ public:
 		return false;
 	}
 
+	edge_list_type GetEdges(const VertexID id) const
+	{
+		auto it{ find_if(cbegin(m_vertexs), cend(m_vertexs), [&id](const auto& v) { return v.id == id; }) };
+		return m_edge_map.at(&(*it));
+	}
+
+	vector<pair<SVertex, size_t>> GetVertexs() const
+	{
+		vector<pair<SVertex, size_t>> res;
+		res.reserve(m_vertexCnt);
+
+		for (const auto& v : m_vertexs)
+		{
+			const auto degree{ m_edge_map.at(addressof(v)).size() };
+			res.push_back(make_pair(v, degree));
+		}
+
+		return res;
+	}
+
 private:
 	int m_vertexCnt;
 	vector<SVertex> m_vertexs;
@@ -120,8 +143,70 @@ void BuildGraph(CGraph& g)
 
 void PaintGraph(CGraph& g)
 {
-	// 차수가 제일 높은 버택스 부터 알고리즘을 진행해야함.
+	auto vertexs{ g.GetVertexs() };
+	sort(begin(vertexs), end(vertexs), [](const auto& v1, const auto& v2) { return v1.second > v2.second; });
 
+	const auto un_finder{ [&vertexs]() {return find_if(begin(vertexs), end(vertexs), [](const auto& v) { return v.first.color == EColor::Unknown; }); } };
+	const auto get_dest{ [&vertexs](const VertexID id) { return find_if(begin(vertexs), end(vertexs), [&id](const auto& v) { return v.first.id == id; }); } };
+
+	auto it{ vertexs.end() };
+	while ((it = un_finder()) != end(vertexs))
+	{
+		// 인근에 할당되지 않은 색상 찾기
+		set<EColor> assignedColors{};
+		for (const auto& e : g.GetEdges(it->first.id))
+		{
+			auto destIt{ get_dest(e.destID) };
+
+			if (destIt != vertexs.end())
+			{
+				if (destIt->first.color != EColor::Unknown)
+					assignedColors.insert(destIt->first.color);
+			}
+		}
+
+		EColor foundColor{ EColor::Unknown };
+		for (int c{ EColor::_First }; c < EColor::_Last; ++c)
+		{
+			if (assignedColors.find(static_cast<EColor>(c)) == assignedColors.end())
+			{
+				foundColor = static_cast<EColor>(c);
+				break;
+			}
+		}
+
+		// 자신의 정점과 다른 정점들의 인근에 해당색상이 없을때 칠한다
+		it->first.color = foundColor;
+		for (auto& v : vertexs)
+		{
+			if (v.first.color == EColor::Unknown)
+			{
+				bool notFound{ true };
+				for (const auto& e : g.GetEdges(v.first.id))
+				{
+					auto destIt{ get_dest(e.destID) };
+					if (destIt != vertexs.end())
+					{
+						if (destIt->first.color == foundColor)
+						{
+							notFound = false;
+							break;
+						}
+					}
+				}
+
+				if (notFound)
+				{
+					v.first.color = foundColor;
+				}
+			}
+		}
+	}
+
+	for (const auto& v : vertexs)
+	{
+		g.SetVertexColor(v.first.id, v.first.color);
+	}
 }
 
 int main(void)
