@@ -17,7 +17,7 @@ struct Edge
 	_T weight;
 };
 
-auto bellman(const vector<Edge<int>>& edges, const int vertexCnt, const unsigned start)
+vector<int> bellman(const vector<Edge<int>>& edges, const int vertexCnt, const unsigned start)
 {
 	vector<int> distances(vertexCnt, numeric_limits<int>::max());
 	distances[start] = 0;
@@ -33,6 +33,17 @@ auto bellman(const vector<Edge<int>>& edges, const int vertexCnt, const unsigned
 			if (newDist < distances[e.dst])
 				distances[e.dst] = newDist;
 		}
+	}
+
+	// 음수 사이클 검출
+	for (const auto& e : edges)
+	{
+		if (distances[e.src] == numeric_limits<int>::max())
+			continue;
+
+		const auto newDist{ distances[e.src] + e.weight };
+		if (newDist < distances[e.dst])
+			return {};
 	}
 
 	return distances;
