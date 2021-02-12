@@ -71,13 +71,38 @@ bool GetAllSubsets_memo(const vector<int>& set, int sum, int i, vector<vector<in
 	return memo[i][sum];
 }
 
+vector<vector<bool>> GetAllSubsets_tb(const vector<int>& set)
+{
+	const int maxSum{ accumulate(cbegin(set), cend(set), 0) };
+
+	vector<vector<bool>> DP(set.size() + 1, vector<bool>(maxSum + 1, false));
+
+	// 0 이면 무조건 참
+	for (auto& sub : DP)
+		sub[0] = true;
+
+	for (auto i{ 1 }; i <= set.size(); ++i)
+	{
+		for (int sum{ 1 }; sum <= maxSum; ++sum)
+		{
+			// 목표조합이 이미 이전 집합에 있다
+			if (sum < set[i - 1])
+				DP[i][sum] = DP[i - 1][sum];
+			else
+				DP[i][sum] = DP[i - 1][sum] || DP[i - 1][sum - set[i - 1]];
+		}
+	}
+
+	return DP;
+}
+
 int main(void)
 {
 	vector<int> set{ 
 		16, 1058, 22, 13, 46, 55, 3, 92, 47, 
 		7, 98, 367, 807, 106, 333, 85, 577, 9, 3059 };
 	
-	const int target{ 6799 };
+	const int target{ 6076 };
 
 	using namespace chrono;
 
@@ -95,6 +120,16 @@ int main(void)
 	}
 	et = steady_clock::now();
 	cout << duration_cast<microseconds>(et - st).count() << endl;
+
+	cout << "TB\n";
+	st = steady_clock::now();
+	{
+		vector<vector<bool>> DP{ GetAllSubsets_tb(set) };
+		cout << "FT"[static_cast<int>(DP[set.size()][target])] << endl;
+	}
+	et = steady_clock::now();
+	cout << duration_cast<microseconds>(et - st).count() << endl;
+
 
 	return 0;
 }
